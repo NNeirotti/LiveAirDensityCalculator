@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Air Density Calculator</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    width: 100%;
+    max-width: 480px;
+    padding: 32px 28px;
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  h1 {
+    font-size: 22px;
+    color: #203a43;
+    margin: 0 0 4px 0;
+    text-align: center;
+  }
+  .subtitle {
+    text-align: center;
+    color: #6b7280;
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+    margin-top: 16px;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input[type="number"]:focus {
+    outline: none;
+    border-color: #2c5364;
+    box-shadow: 0 0 0 3px rgba(44,83,100,0.15);
+  }
+  .coord-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  #calcBtn {
+    background: linear-gradient(135deg, #2c5364, #203a43);
+    color: #fff;
+  }
+  #calcBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(44,83,100,0.4);
+  }
+  #locBtn {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+  }
+  #locBtn:hover {
+    background: #e5e7eb;
+  }
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+  .results {
+    margin-top: 24px;
+    display: none;
+  }
+  .results.show {
+    display: block;
+    animation: fadeIn 0.4s ease-in-out;
+  }
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .result-box {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+  }
+  .result-box .value {
+    font-size: 17px;
+    font-weight: 700;
+    color: #203a43;
+  }
+  .result-box .label {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .density-highlight {
+    margin-top: 14px;
+    background: linear-gradient(135deg, #2c5364, #203a43);
+    color: #fff;
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+  }
+  .density-highlight .value {
+    font-size: 28px;
+    font-weight: 800;
+  }
+  .density-highlight .label {
+    font-size: 12px;
+    opacity: 0.85;
+    margin-top: 4px;
+  }
+  .status {
+    margin-top: 16px;
+    font-size: 13px;
+    text-align: center;
+    color: #6b7280;
+    min-height: 18px;
+  }
+  .status.error {
+    color: #dc2626;
+    font-weight: 600;
+  }
+  .footer-note {
+    margin-top: 20px;
+    font-size: 11px;
+    color: #9ca3af;
+    text-align: center;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>Air Density Calculator</h1>
+  <p class="subtitle">Ground-level density for any coordinates</p>
+
+  <div class="coord-row">
+    <div>
+      <label for="lat">Latitude</label>
+      <input type="number" id="lat" step="any" placeholder="e.g. 39.7392" value="39.7392">
+    </div>
+    <div>
+      <label for="lon">Longitude</label>
+      <input type="number" id="lon" step="any" placeholder="e.g. -104.9903" value="-104.9903">
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button id="locBtn" type="button">📍 Use My Location</button>
+    <button id="calcBtn" type="button">Calculate</button>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <div class="results" id="results">
+    <div class="result-grid">
+      <div class="result-box">
+        <div class="value" id="groundAlt">--</div>
+        <div class="label">Ground Altitude (m)</div>
+      </div>
+      <div class="result-box">
+        <div class="value" id="temp">--</div>
+        <div class="label">Temperature (°C)</div>
+      </div>
+      <div class="result-box">
+        <div class="value" id="pressure">--</div>
+        <div class="label">Est. Pressure (Pa)</div>
+      </div>
+      <div class="result-box">
+        <div class="value" id="densityLbFt3">--</div>
+        <div class="label">Density (lb/ft³)</div>
+      </div>
+    </div>
+
+    <div class="density-highlight">
+      <div class="value" id="density">-- kg/m³</div>
+      <div class="label">Estimated Air Density (Ground Level)</div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    Altitude &amp; temperature via Open-Meteo API (single request)<br>
+    Pressure estimated using the standard atmosphere barometric formula (dry air, no humidity correction)<br>
+    Ground-level density used as the conservative worst case — density decreases with altitude.
+  </div>
+</div>
+
+<script>
+  const SEA_LEVEL_PRESSURE = 101325; // Pa
+  const R_SPECIFIC = 287.05; // J/(kg*K)
+
+  const latInput = document.getElementById('lat');
+  const lonInput = document.getElementById('lon');
+  const calcBtn = document.getElementById('calcBtn');
+  const locBtn = document.getElementById('locBtn');
+  const statusEl = document.getElementById('status');
+  const resultsEl = document.getElementById('results');
+
+  function setStatus(msg, isError = false) {
+    statusEl.textContent = msg;
+    statusEl.className = 'status' + (isError ? ' error' : '');
+  }
+
+  function calculatePressure(altitudeM) {
+    return SEA_LEVEL_PRESSURE * Math.pow(1 - 2.25577e-5 * altitudeM, 5.25588);
+  }
+
+  function calculateDensity(pressurePa, tempC) {
+    const tempK = tempC + 273.15;
+    return pressurePa / (R_SPECIFIC * tempK);
+  }
+
+  async function getWeatherAndElevation(lat, lon) {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('Weather API request failed (status ' + resp.status + ')');
+    const data = await resp.json();
+    return {
+      elevation: data.elevation,
+      temperature: data.current_weather.temperature
+    };
+  }
+
+  async function runCalculation() {
+    const lat = parseFloat(latInput.value);
+    const lon = parseFloat(lonInput.value);
+
+    if (isNaN(lat) || isNaN(lon)) {
+      setStatus('Please enter valid latitude and longitude.', true);
+      return;
+    }
+    if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+      setStatus('Coordinates out of range.', true);
+      return;
+    }
+
+    calcBtn.disabled = true;
+    resultsEl.classList.remove('show');
+    setStatus('⏳ Fetching altitude and temperature...');
+
+    try {
+      const { elevation, temperature } = await getWeatherAndElevation(lat, lon);
+
+      const pressure = calculatePressure(elevation);
+      const density = calculateDensity(pressure, temperature);
+      const densityLbFt3 = density * 0.062428;
+
+      document.getElementById('groundAlt').textContent = elevation.toFixed(1);
+      document.getElementById('temp').textContent = temperature.toFixed(1);
+      document.getElementById('pressure').textContent = pressure.toFixed(0);
+      document.getElementById('densityLbFt3').textContent = densityLbFt3.toFixed(4);
+      document.getElementById('density').textContent = density.toFixed(4) + ' kg/m³';
+
+      resultsEl.classList.add('show');
+      setStatus('✅ Calculation complete.');
+    } catch (err) {
+      setStatus('Error: ' + err.message + '. Please check your connection and try again.', true);
+    } finally {
+      calcBtn.disabled = false;
+    }
+  }
+
+  function useMyLocation() {
+    if (!navigator.geolocation) {
+      setStatus('Geolocation not supported by this browser.', true);
+      return;
+    }
+    setStatus('📍 Getting your location...');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        latInput.value = pos.coords.latitude.toFixed(6);
+        lonInput.value = pos.coords.longitude.toFixed(6);
+        setStatus('Location found. Click Calculate.');
+      },
+      (err) => {
+        setStatus('Could not get location: ' + err.message, true);
+      }
+    );
+  }
+
+  calcBtn.addEventListener('click', runCalculation);
+  locBtn.addEventListener('click', useMyLocation);
+</script>
+
+</body>
+</html>
